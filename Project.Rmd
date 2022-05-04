@@ -1,0 +1,222 @@
+---
+title: "Project"
+author: "Dereatha Cross & Bijan GURUNG"
+date: "4/14/2022"
+output: html_document
+---
+
+## {.tabset}
+### Background
+
+```{r}
+install.packages("sf")
+install.packages("tidyverse")
+library(sf)
+library(tidyverse)
+
+flts_pts <- st_read("D:/GEOG 728/Project/LAKE_Mead_Waypoints/LAKE_20200816_to_20210930_Pts_clip_UTM11_comb.shp")
+#read the overflights point data of a year 2021/22
+
+head(flts_pts)
+
+glimpse(flts_pts)
+
+#flts_pts_II <- st_read("C:/Users/bijangurung/Desktop/Research/Files_for_GEOG728_final/LAKE_20210716_to_20210731_Pts_clip_UTM11.shp")
+
+#glimpse(flts_pts_II)
+
+#flts_pts_union <- st_union(flts_pts_I, flts_pts_II, by_feature = FALSE)
+
+lake <- st_read("D:/GEOG 728/Project/Lake Western Unit Polygon/LAKE Western Unit Perimeter Polygon.shp")
+#read the Lake Mead western perimeter 
+
+head(lake)
+
+glimpse(lake)
+
+lake_buff <- st_buffer(lake, dist = 0.5*1609.34)
+#creating a buffer of 0.5 mile around the lake
+#1 mile = 1609.34 meters
+
+ggplot()+
+  geom_sf(data = lake_buff, aes(fill = UNIT_CODE))
+
+#flts_pts_1 <- flts_pts %>%
+#  filter(Alt_AGL_ft %in% (0:5000))
+#we only take out the Alt_AGL_ft up to 5,000 ft points
+
+#dim(flts_pts_1)
+#dim(flts_pts)
+
+#ggplot()+
+#  geom_sf(data = flts_pts_1, size=0.05, alpha=0.5)
+
+#st_crs(flts_pts_1) == st_crs(lake)
+st_crs(flts_pts_1)
+st_crs(lake)
+
+flts_pts_1 <- flts_pts %>%
+  filter(Alt_AGL_ft %in% (4000:4500))
+#selecting the waypoints in between 4,000 - 4,500 AGL ft
+dim(flts_pts_1)
+head(flts_pts_1)
+
+#purposive sampling
+flts_pts_2 <- flts_pts_1[1:10000, ]
+dim(flts_pts_2)
+
+ggplot()+
+  geom_sf(data = lake_buff, aes(fill = UNIT_CODE))+
+  geom_sf(data = flts_pts_2, size=0.005, alpha=0.5)
+
+
+
+
+
+
+#sampling from the points in flts_pts_1
+flts_pts_1_sam <- st_sample(flts_pts_1, 10000, type = "random")
+class(flts_pts_1_sam)
+head(flts_pts_1_sam)
+
+flts_pts_1_sam <- st_as_sf(flts_pts_1_sam)
+class(flts_pts_1_sam)
+
+plot(st_geometry(lake_buff))
+plot(flts_pts_1_sam, pch = 16, cex = 0.02, col = "black")
+st_crs(flts_pts_1_sam)
+
+install.packages("spatstat")
+library(spatstat)
+
+saveRDS(flts_pts_1_sam, file = "flts_pts_fnl.rds")
+
+class(flts_pts_fnl.rds)
+
+flts_pts_3 <- readRDS("flts_pts_fnl.rds")
+
+flts_pts_1_sam_ppp <- as(flts_pts_1_sam, "Spatial")
+
+flts_pts_1_sam <- st_transform(flts_pts_1_sam, crs=st_crs(flts_pts_1))
+
+install.packages("MASS")
+library(MASS)
+
+write.matrix(flts_pts_1_sam,file="flts_pts_3.csv", sep = " ")
+
+
+
+s_ppp <-as(flts_pts_1_sam, "Spatial")
+
+
+flts_pts_1_sam <- st_transform(flts_pts_1_sam, crs=st_crs(flts_pts_1))
+
+flts_pts_1_sam <- st_as_sf(flts_pts_1_sam, coords = c("X", "Y"))
+
+flts_pts_1_sam <- st_coordinates(flts_pts_1_sam)
+
+flts_pts_1_sam <- st_sample(flts_pts_1, 10000, type = "random", exact = TRUE)
+
+flts_pts_1_sam <- st_transform(flts_pts_1_sam, st_crs(flts_pts_1))
+
+st_crs(flts_pts_1)
+
+dim(flts_pts_1_sam)
+glimpse(flts_pts_1_sam)
+
+head(flts_pts_1)
+head(flts_pts_1_sam)
+class(flts_pts_1)
+class(flts_pts_1_sam)
+glimpse(flts_pts_1_sam)
+
+ggplot()+
+  geom_sf(data = lake_buff, aes(fill = UNIT_CODE))+
+  geom_sf(data = flts_pts_1_sam, size=0.05, alpha=0.5)
+
+st_crs(flts_pts_1_sam) == st_crs(lake_buff)
+
+ggplot()+
+  geom_sf(data = lake_buff, aes(fill = UNIT_CODE))+
+  geom_sf(data = flts_pts_1, size=0.05, alpha=0.5)
+```
+
+## R Markdown
+
+
+```{r}
+install.packages("spatstat")
+library(spatstat)
+
+install.packages("basemaps")
+library(basemaps)
+
+#data(ext)
+
+#get_maptypes()
+
+#set_defaults(map_service = "mapbox", map_type = "satellite",
+#             map_token = "YOUR_MAPTOKEN_IF_NEEDED")
+
+#basemap_plot(ext)
+
+#basemap_mapview(ext)
+
+ggplot()+
+  geom_sf(data = lake, aes(fill = UNIT_CODE))+
+  geom_sf(data = flts_pts_2, size=0.05, alpha=0.5)
+
+#calculating mean center 
+head(flts_pts_2)
+
+xy <- st_coordinates(flts_pts_2)
+mc <- apply(xy, 2, mean)
+mc
+
+mean_center <- as.data.frame(cbind(mc[1], mc[2]))
+
+ggplot() +
+  geom_sf(data = lake_buff) +
+  geom_sf(data = flts_pts_2, size=0.05, alpha=0.5) +
+  geom_point(data = mean_center, aes(x = V1, y = V2), color = "red", size = 2)
+
+
+#plot(st_geometry(lake))
+#plot(st_geometry(flts_pts_2), add = T, cex=.5, col = "black", pch =16)
+#points(cbind(mc[1], mc[2]), pch='*', col='red', cex=5)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+library(pacman)
+p_load(tmap)
+
+tmap_mode("plot")
+
+tm_shape(lake_buff)+
+  tm_polygons("UNIT_CODE")+
+  #tm_shape(flts_pts_2) + tm_dots(size=0.01, col = "blue")
+```
+
+Notes:
+
+Advisory regarding flights over charted National Park Service areas, U.S. Fish and Wildlife Service areas, or U.S. Forest Service areas. All aircraft are requested to maintain a minimum altitude of 2,000 feet above the surface of lands and waters administered by the NPS, UFWS, or USFS Wilderness areas.
+
+Pilots are requested to maintain a minimum altitude of 2,000 feet above the surface of the following: National Parks, Monuments, Seashores, Lakeshores, Recreation Areas and Scenic Riverways administered by the National Park Service, National Wildlife Refuges, Big Game Refuges, Game Ranges and Wildlife Ranges.
+
+```{r}
+tmap_mode("view")
+
+tm_basemap("OpenStreetMap")+
+  tm_shape(lake_buff) + tm_polygons("UNIT_CODE", alpha = 0.5)+
+  tm_shape(flts_pts_2) + tm_dots(size=0.005, col = "blue")
+```
+
+
+```{r}
+
+```
+
